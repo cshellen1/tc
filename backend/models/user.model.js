@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
 		},
 		fullName: {
 			type: String,
+			required: true,
 		},
 		password: {
 			type: String,
@@ -46,11 +47,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    link: {
-      type: String,
-      default: "",
-    },
-		likedPosts: [
+   	likedPosts: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "Post",
