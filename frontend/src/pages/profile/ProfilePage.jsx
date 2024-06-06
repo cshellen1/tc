@@ -19,6 +19,7 @@ import { MdEdit } from "react-icons/md";
  * The component also includes a feed section that displays the user's posts or liked posts, depending on the selected feed type.
  */
 const ProfilePage = () => {
+
 	const [coverImg, setCoverImg] = useState(null);
 	const [profileImg, setProfileImg] = useState(null);
 	const [feedType, setFeedType] = useState("posts");

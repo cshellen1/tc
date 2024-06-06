@@ -11,9 +11,9 @@ export const signup = async (req, res) => {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({error: "User already exists"});
+      return res.status(400).json({error: "Username already in use"});
     }
 
     const existingEmail = await User.findOne({ email });
