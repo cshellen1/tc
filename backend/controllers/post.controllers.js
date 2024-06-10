@@ -4,7 +4,7 @@ import Notification from "../models/notification.model.js";
 import { v2 as cloudinary } from "cloudinary";
 
 export const createPost = async (req, res) => {
-	console.log("createPost controller: ", req.body);
+	
 	try {
 		const { text } = req.body;
 		let { img } = req.body;
@@ -29,6 +29,7 @@ export const createPost = async (req, res) => {
 		});
 
 		await newPost.save();
+		console.log("newPost: ", newPost);
 		return res.status(201).json(newPost);
 	} catch (error) {
 		console.log(error, "Error in createPost controller: ", error);

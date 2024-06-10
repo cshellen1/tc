@@ -14,9 +14,10 @@ const CreatePost = () => {
 	const queryClient = useQueryClient();
 
 	const {mutate: createPost, isPending, isError, error} = useMutation({
-		mutationFn: async (text, img) => {
-
-			if (!text &&!img) throw new Error("Please enter some text or upload an image");
+		mutationFn: async ({ text, img }) => {
+			
+			if (text === "" && img === null) throw new Error("Please enter some text or upload an image");
+			
 			
 			try {
 				const res = await fetch("/api/posts/create", {
@@ -33,6 +34,7 @@ const CreatePost = () => {
 				const data = await res.json()
 				;	
 				if (!res.ok) throw new Error(data.error || "Something went wrong");
+				
 				return data;
 
 			} catch (error) {
@@ -51,7 +53,7 @@ const CreatePost = () => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		createPost(text, img);
+		createPost({ text, img });
 	};
 
 	const handleImgChange = (e) => {
