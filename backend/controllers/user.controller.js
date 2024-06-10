@@ -43,7 +43,7 @@ export const followUnfollowUser = async (req, res) => {
       // Unfollow user
       await currentUser.updateOne({ $pull: { following: id } });
       await userToFollowUnfollow.updateOne({ $pull: { followers: req.user._id } });
-      // TODO return the id of the user as a response for the front end to redirect to the user's profile page
+      
       return res.status(200).json({ message: "User unfollowed successfully" });
     } else {
       // Follow user
@@ -55,7 +55,7 @@ export const followUnfollowUser = async (req, res) => {
         to: userToFollowUnfollow._id,
         type: "follow",
       }).save();
-      // TODO return the id of the user as a response for the front end to redirect to the user's profile page
+      
       return res.status(200).json({ message: "User followed successfully" });
     }
   } catch (error) {
