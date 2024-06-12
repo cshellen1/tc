@@ -70,7 +70,7 @@ const RightPanel = () => {
 											follow(user._id);
 										}}
 									>
-										{isPending? "Loading..." : "Follow"}
+										{isPending ? "Loading..." : "Follow"}
 									</button>
 								</div>
 							</Link>

@@ -2,8 +2,6 @@ import bcrypt from "bcryptjs";
 import {v2 as cloudinary} from 'cloudinary';
 
 import User from "../models/user.model.js";
-import Notification from "../models/notification.model.js";
-
 
 export const getUserProfile = async (req, res) => {
   const { username } = req.params; 
@@ -49,12 +47,6 @@ export const followUnfollowUser = async (req, res) => {
       // Follow user
       await currentUser.updateOne({ $push: { following: id } });
       await userToFollowUnfollow.updateOne({ $push: { followers: req.user._id } });
-      // send notification to user
-      await new Notification({
-        from: req.user._id,
-        to: userToFollowUnfollow._id,
-        type: "follow",
-      }).save();
       
       return res.status(200).json({ message: "User followed successfully" });
     }
