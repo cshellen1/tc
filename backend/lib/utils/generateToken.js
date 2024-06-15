@@ -1,5 +1,12 @@
 import jwt from "jsonwebtoken";
 
+/**
+ * Generates a JWT token and sets it as a cookie on the response object.
+ *
+ * @param {string} userId - The ID of the user to generate the token for.
+ * @param {object} res - The Express response object to set the cookie on.
+ * @returns {object} The response object with the JWT token set as a cookie.
+ */
 export const generateTokenAndSetCookie = (userId, res) => {
 	console.log(userId._id);
 	const token = jwt.sign({ userId }, process.env.JWT_SECRET, {

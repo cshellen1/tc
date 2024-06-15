@@ -9,6 +9,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { formatPostDate } from "../../utils/date";
 
+/**
+ * Renders a single post component with functionality for commenting, liking, and deleting the post.
+ *
+ * @param {Object} post - The post object containing the post data.
+ * @returns {JSX.Element} - The rendered post component.
+ */
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -200,7 +206,7 @@ const Post = ({ post }) => {
 									<div className="flex flex-col gap-3 max-h-60 overflow-auto">
 										{post.comments.length === 0 && (
 											<p className="text-sm text-slate-500">
-												No comments yet 🤔 Be the first one 😉
+												No comments
 											</p>
 										)}
 										{post.comments.map((comment) => (

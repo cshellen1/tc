@@ -2,8 +2,19 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { v2 as cloudinary } from "cloudinary";
 
+/**
+ * Creates a new post in the application.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} req.body - The request body containing the post data.
+ * @param {string} req.body.text - The text content of the post.
+ * @param {string} [req.body.img] - The URL of an image to be associated with the post.
+ * @param {string} req.user._id - The ID of the user creating the post.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - The created post object.
+ * @throws {Error} - If there is an error creating the post.
+ */
 export const createPost = async (req, res) => {
-	
 	try {
 		const { text } = req.body;
 		let { img } = req.body;
@@ -36,6 +47,16 @@ export const createPost = async (req, res) => {
 	}
 };
 
+/**
+ * Deletes a post from the application.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.params.id - The ID of the post to be deleted.
+ * @param {string} req.user._id - The ID of the user deleting the post.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - A success message indicating the post was deleted.
+ * @throws {Error} - If the post is not found or the user is not authorized to delete the post.
+ */
 export const deletePost = async (req, res) => {
 	try {
 		const post = await Post.findById(req.params.id);
@@ -57,6 +78,17 @@ export const deletePost = async (req, res) => {
 	}
 };
 
+/**
+ * Adds a comment to a post.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.body.text - The text of the comment.
+ * @param {string} req.params.id - The ID of the post to comment on.
+ * @param {string} req.user._id - The ID of the user making the comment.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - The updated list of comments for the post.
+ * @throws {Error} - If the post is not found or the text field is missing.
+ */
 export const commentOnPost = async (req, res) => {
 	try {
 		const { text } = req.body;
@@ -81,20 +113,29 @@ export const commentOnPost = async (req, res) => {
 		await post.save();
 
 		const updatedComments = await Post.findById(postId)
-      .populate({
-        path: "comments.user",
-        select: "-password", // exclude password field
-      })
-      .then((post) => post.comments);
+			.populate({
+				path: "comments.user",
+				select: "-password", // exclude password field
+			})
+			.then((post) => post.comments);
 
 		return res.status(200).json(updatedComments);
-
 	} catch (error) {
 		console.log("Error in commentOnPost controller: ", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
 
+/**
+ * Toggles the like/unlike state of a post for the current user.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.user._id - The ID of the user making the request.
+ * @param {string} req.params.id - The ID of the post to like/unlike.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - The updated list of likes for the post.
+ * @throws {Error} - If the post is not found.
+ */
 export const likeUnlikePost = async (req, res) => {
 	try {
 		const userId = req.user._id;
@@ -112,9 +153,10 @@ export const likeUnlikePost = async (req, res) => {
 			await post.updateOne({ $pull: { likes: userId } });
 			await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
 			// Remove userId from likes array on post without sending another request
-			const updatedLikes = post.likes.filter((like) => like.toString()!== userId.toString());
+			const updatedLikes = post.likes.filter(
+				(like) => like.toString() !== userId.toString()
+			);
 			return res.status(200).json(updatedLikes);
-
 		} else {
 			// Like post
 			post.likes.push(userId);
@@ -132,6 +174,14 @@ export const likeUnlikePost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
 	try {
+		/**
+		 * Retrieves all posts from the database, sorted by creation date in descending order, and populates the user and comment user information.
+		 *
+		 * @param {Object} req - The HTTP request object.
+		 * @param {Object} res - The HTTP response object.
+		 * @returns {Promise<Object>} - The list of posts.
+		 * @throws {Error} - If there is an error retrieving the posts.
+		 */
 		const posts = await Post.find()
 			.sort({ createdAt: -1 })
 			.populate({
@@ -162,6 +212,14 @@ export const getLikedPosts = async (req, res) => {
 			return res.status(404).json({ error: "User not found" });
 		}
 
+		/**
+		 * Retrieves the posts that the current user has liked.
+		 *
+		 * @param {Object} req - The HTTP request object.
+		 * @param {Object} res - The HTTP response object.
+		 * @returns {Promise<Object>} - The list of posts the user has liked.
+		 * @throws {Error} - If there is an error retrieving the liked posts.
+		 */
 		const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
 			.populate({
 				path: "user",
@@ -188,6 +246,14 @@ export const getFollowingPosts = async (req, res) => {
 		}
 		const following = user.following;
 
+		/**
+		 * Retrieves the posts that the current user is following.
+		 *
+		 * @param {Object} req - The HTTP request object.
+		 * @param {Object} res - The HTTP response object.
+		 * @returns {Promise<Object>} - The list of posts from the users the current user is following.
+		 * @throws {Error} - If there is an error retrieving the posts from the users the current user is following.
+		 */
 		const followingPosts = await Post.find({ user: { $in: following } })
 			.sort({ createdAt: -1 })
 			.populate({
@@ -213,6 +279,15 @@ export const getUserPosts = async (req, res) => {
 		if (!user) {
 			return res.status(404).json({ error: "User not found" });
 		}
+		/**
+		 * Retrieves the posts of the user with the specified username.
+		 *
+		 * @param {Object} req - The HTTP request object.
+		 * @param {string} req.params.username - The username of the user whose posts should be retrieved.
+		 * @param {Object} res - The HTTP response object.
+		 * @returns {Promise<Object>} - The list of posts for the specified user.
+		 * @throws {Error} - If there is an error retrieving the posts for the specified user.
+		 */
 		const posts = await Post.find({ user: user._id })
 			.sort({ createdAt: -1 })
 			.populate({

@@ -3,87 +3,125 @@ import {v2 as cloudinary} from 'cloudinary';
 
 import User from "../models/user.model.js";
 
+/**
+ * Retrieves the profile of a user by their username.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.params.username - The username of the user to retrieve.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} - A Promise that resolves when the response is sent.
+ */
+/**
+ * Retrieves the profile of a user by their username.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.params.username - The username of the user to retrieve.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} - A Promise that resolves when the response is sent.
+ */
 export const getUserProfile = async (req, res) => {
-  const { username } = req.params; 
-  
-  try {
-    const user = await User.findOne({ username }).select("-password");
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+	const { username } = req.params;
 
-    return res.status(200).json(user);
+	try {
+		const user = await User.findOne({ username }).select("-password");
 
-  } catch (error) {
-    console.log("Error in getUserProfile", error.message);
-    return res.status(500).json({ error: error.message });
-  }
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		return res.status(200).json(user);
+	} catch (error) {
+		console.log("Error in getUserProfile", error.message);
+		return res.status(500).json({ error: error.message });
+	}
 };
 
+/**
+ * Follows or unfollows a user based on the current user's state.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.params.id - The ID of the user to follow or unfollow.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - A JSON response indicating the result of the follow/unfollow operation.
+ */
 export const followUnfollowUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userToFollowUnfollow = await User.findById(id);
-    const currentUser = await User.findById(req.user._id);
+	try {
+		const { id } = req.params;
+		const userToFollowUnfollow = await User.findById(id);
+		const currentUser = await User.findById(req.user._id);
 
-    if (!userToFollowUnfollow) {
-      return res.status(404).json({ error: "User not found" });
-    }
+		if (!userToFollowUnfollow) {
+			return res.status(404).json({ error: "User not found" });
+		}
 
-    if (id === req.user._id.toString()) {
-      return res.status(400).json({ error: "You cannot follow/unfollow yourself" });
-    }
+		if (id === req.user._id.toString()) {
+			return res
+				.status(400)
+				.json({ error: "You cannot follow/unfollow yourself" });
+		}
 
-    const isFollowing = currentUser.following.includes(id);
+		const isFollowing = currentUser.following.includes(id);
 
-    if (isFollowing) {
-      // Unfollow user
-      await currentUser.updateOne({ $pull: { following: id } });
-      await userToFollowUnfollow.updateOne({ $pull: { followers: req.user._id } });
-      
-      return res.status(200).json({ message: "User unfollowed successfully" });
-    } else {
-      // Follow user
-      await currentUser.updateOne({ $push: { following: id } });
-      await userToFollowUnfollow.updateOne({ $push: { followers: req.user._id } });
-      
-      return res.status(200).json({ message: "User followed successfully" });
-    }
-  } catch (error) {
-    console.log("Error in followUnfollowUser", error.message);
-    return res.status(500).json({ error: error.message });
-  }
+		if (isFollowing) {
+			// Unfollow user
+			await currentUser.updateOne({ $pull: { following: id } });
+			await userToFollowUnfollow.updateOne({
+				$pull: { followers: req.user._id },
+			});
+
+			return res.status(200).json({ message: "User unfollowed successfully" });
+		} else {
+			// Follow user
+			await currentUser.updateOne({ $push: { following: id } });
+			await userToFollowUnfollow.updateOne({
+				$push: { followers: req.user._id },
+			});
+
+			return res.status(200).json({ message: "User followed successfully" });
+		}
+	} catch (error) {
+		console.log("Error in followUnfollowUser", error.message);
+		return res.status(500).json({ error: error.message });
+	}
 };
 
+/**
+ * Retrieves a list of suggested users for the current user to follow.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string} req.user._id - The ID of the current user.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} - A JSON response containing an array of up to 4 suggested users.
+ */
 export const getSuggestedUsers = async (req, res) => {
-  try {
-    const currentUserId = req.user._id;
+	try {
+		const currentUserId = req.user._id;
 
-    const usersFollowedByCurrentUser = await User.findById(currentUserId).select(
-      "following"
-    );
+		const usersFollowedByCurrentUser = await User.findById(
+			currentUserId
+		).select("following");
 
-    const users = await User.aggregate([
-      {
-        $match: {
-          _id: { $ne: currentUserId },
-        }
-      },
-      { $sample: { size: 10 } },
-    ]);
-    
-    const filteredUsers = users.filter(user => !usersFollowedByCurrentUser.following.includes(user._id));
-    const suggestedUsers = filteredUsers.slice(0, 4);
-    // Updates the suggested users passwords to null in the reponse only, the database is unaffected
-    suggestedUsers.forEach(user => user.password = null);
+		const users = await User.aggregate([
+			{
+				$match: {
+					_id: { $ne: currentUserId },
+				},
+			},
+			{ $sample: { size: 10 } },
+		]);
 
-    return res.status(200).json(suggestedUsers);
+		const filteredUsers = users.filter(
+			(user) => !usersFollowedByCurrentUser.following.includes(user._id)
+		);
+		const suggestedUsers = filteredUsers.slice(0, 4);
+		// Updates the suggested users passwords to null in the reponse only, the database is unaffected
+		suggestedUsers.forEach((user) => (user.password = null));
 
-  } catch (error) {
-    console.log("Error in getSuggestedUsers", error.message);
-    return res.status(500).json({ error: error.message });
-  }
+		return res.status(200).json(suggestedUsers);
+	} catch (error) {
+		console.log("Error in getSuggestedUsers", error.message);
+		return res.status(500).json({ error: error.message });
+	}
 };
 
 /**

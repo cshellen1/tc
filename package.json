@@ -22,6 +22,17 @@
     "mongoose": "^8.4.0"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "^5.35.6"
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-react": "^7.24.7",
+    "@tanstack/eslint-plugin-query": "^5.35.6",
+    "babel-jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "vite-jest": "^0.1.4"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   }
 }
