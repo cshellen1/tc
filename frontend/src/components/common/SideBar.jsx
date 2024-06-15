@@ -13,7 +13,7 @@ const Sidebar = () => {
 	const { mutate: logoutMutation } = useMutation({
 		mutationFn: async () => {
 			try {
-				const res = await fetch("api/auth/logout", {
+				const res = await fetch("/api/auth/logout", {
 					method: "POST",
 				});
 
@@ -68,9 +68,7 @@ const Sidebar = () => {
 						<div className="avatar hidden md:inline-flex">
 							<div className="w-8 rounded-full">
 								<img
-									src={
-										!authUser.profileImg === "" ? authUser.profileImg : "/images/avatar-placeholder.png"
-									}
+									src={authUser?.profileImg || "/images/avatar-placeholder.png"}
 								/>
 							</div>
 						</div>

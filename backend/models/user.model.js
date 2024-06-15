@@ -53,7 +53,11 @@ const userSchema = new mongoose.Schema(
 				ref: "Post",
 				default: [],
 			},
-		]
+		],
+		link: {
+			type: String,
+			default: "",
+		},
 	},
 	{ timestamps: true }
 );

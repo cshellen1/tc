@@ -47,6 +47,7 @@ export const signup = async (req, res) => {
         following: newUser.following,
         profileImg: newUser.profileImg,
         coverImg: newUser.coverImg,
+        link: newUser.link, 
       });
     } else {
       return res.status(400).json({ error: "Error creating user" });
