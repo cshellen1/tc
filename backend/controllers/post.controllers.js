@@ -24,7 +24,7 @@ export const createPost = async (req, res) => {
 		if (!user) {
 			return res.status(404).json({ error: "User not found" });
 		}
-		if (!text && img) {
+		if (!text && !img) {
 			return res.status(400).json({ error: "Post must have text or image" });
 		}
 		if (img) {
