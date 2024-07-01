@@ -65,13 +65,64 @@ describe("signup", () => {
 					_id: expect.anything(),
 					username: "uniquetestuser",
 					email: "uniquetestemail@example.com",
-          fullName: "Test User",
-          followers: [],
-				  following: [],
-				  profileImg: "",
-				  coverImg: "",
-				  link: ""
+					fullName: "Test User",
+					followers: [],
+					following: [],
+					profileImg: "",
+					coverImg: "",
+					link: "",
 				});
 			});
+	});
+  it("should return an error if the username is already in use", async () => {
+		const req = {
+			fullName: "Test User",
+			username: "testuser1",
+			email: "uniqueusernametestemail@example.com",
+			password: "<PASSWORD>",
+		};
+    const res = await request(app)
+    .post("/api/auth/signup")
+    .send(req)
+    .expect(400)
+    .expect((res) => {
+       expect(res.body).toMatchObject({
+         error: "Username already in use",
+       });
+     });
+	});
+	it("should return an error if the email is already in use", async () => {
+		const req = {
+			fullName: "Test User",
+			username: "uniqueemailtestuser",
+			email: "test1@example.com",
+			password: "<PASSWORD>",
+		};
+		const res = await request(app)
+			.post("/api/auth/signup")
+			.send(req)
+			.expect(400)
+			.expect((res) => {
+				expect(res.body).toMatchObject({
+					error: "Email already in use",
+				});
+			});
+	});
+	it("should return an error if the password is less than 6 characters", async () => {
+		const req = {
+			fullName: "Test User",
+			username: "testytester",
+			email: "testytestemail@example.com",
+			password: "short",
+		};
+		const res = await request(app)
+			.post("/api/auth/signup")
+      .send(req)
+      .expect(400)
+      .expect((res) => {
+         expect(res.body).toMatchObject({
+           error: "Password must be at least 6 characters",
+         });
+       });
 	});
 });
