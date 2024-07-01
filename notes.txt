@@ -1,3 +1,0 @@
-atlas/mongoDB login info
-username: cshellen1
-password: bS7UsXcWUwRC6jFY
