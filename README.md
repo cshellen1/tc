@@ -22,12 +22,22 @@ CLOUDINARY_API_SECRET=...
 
 ## Build the app
 
+From the terminal in the root directory run:
 ```shell
 npm run build
 ```
 
 ## Start the app
 
+From the terminal in the root directory run:
 ```shell
 npm start
+```
+
+## Testing
+Only testing for the backend is complete. Jest was used with supertest as the  for testing the backend.
+
+From the terminal in the root directory run:
+```shell
+npm test
 ```
