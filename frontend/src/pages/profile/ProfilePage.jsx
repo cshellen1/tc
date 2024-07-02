@@ -104,7 +104,6 @@ const ProfilePage = () => {
 
 	useEffect(() => {
 		refetch();
-		console.log(user);
 	}, [username, refetch, authUser]);
 
 	return (

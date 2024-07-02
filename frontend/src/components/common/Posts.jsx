@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const Posts = ({feedType, username, userId}) => {
-	console.log(feedType, username, userId);
 	const getPostEndPoint = () => {
 		switch (feedType) {
 			case "forYou":

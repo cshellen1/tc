@@ -40,18 +40,21 @@ beforeAll(async () => {
 				user: testUser2._id,
 			},
 		],
-    likes: [
-      {
-        _id: testUser2._id,
-      },
-    ],
+		likes: [
+			{
+				_id: testUser2._id,
+			},
+		],
 	});
 	testPost2 = await Post.create({
 		user: testUser2._id,
 		text: "This is another test post",
 	});
 
-  await User.findOneAndUpdate({username: "testuser2"}, {likedPosts: [ {_id: testPost1._id }]})
+	await User.findOneAndUpdate(
+		{ username: "testuser2" },
+		{ likedPosts: [{ _id: testPost1._id }] }
+	);
 });
 
 afterAll(async () => {
@@ -62,7 +65,7 @@ afterAll(async () => {
 
 describe("createPost", () => {
 	it("successfully creates a new post with just text", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 
@@ -83,7 +86,7 @@ describe("createPost", () => {
 	});
 
 	it("successfully creates a new post with just text and an image", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const req = {
@@ -103,15 +106,15 @@ describe("createPost", () => {
 		expect(res.body.img).toBeDefined();
 		expect(res.body.user).toBe(testUser1._id.toString());
 
-    // clean up cloudinary account after test
-    if (res.body.img) {
+		// clean up cloudinary account after test
+		if (res.body.img) {
 			const imageId = res.body.img.split("/").pop().split(".")[0];
 			await cloudinary.uploader.destroy(imageId);
 		}
 	});
 
 	it("successfully creates a new post with just an image", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const req = {
@@ -129,15 +132,15 @@ describe("createPost", () => {
 		expect(res.body.img).toBeDefined();
 		expect(res.body.user).toBe(testUser1._id.toString());
 
-    // clean up cloudinary account after test
-    if (res.body.img) {
+		// clean up cloudinary account after test
+		if (res.body.img) {
 			const imageId = res.body.img.split("/").pop().split(".")[0];
 			await cloudinary.uploader.destroy(imageId);
 		}
 	});
 
 	it("fails to create a new post without a text or image", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const req = { text: undefined, img: undefined };
@@ -153,7 +156,7 @@ describe("createPost", () => {
 
 describe("getAllPosts", () => {
 	it("successfully gets all posts", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const res = await request(app)
@@ -167,61 +170,61 @@ describe("getAllPosts", () => {
 		expect(res.body[3].text).toBe(testPost2.text);
 		expect(res.body[3].user._id).toBe(testUser2._id.toString());
 		expect(res.body[0].img).toBeDefined();
-    expect(res.body[4].comments[0].text).toBe(testPost1.comments[0].text);
+		expect(res.body[4].comments[0].text).toBe(testPost1.comments[0].text);
 	});
 });
 
 describe("comment on post", () => {
 	it("successfully comments on a post", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
-    const req = {
+		const req = {
 			text: "This is a test comment for test post 2",
 		};
-    const res = await request(app)
-    .post(`/api/posts/comment/${testPost2._id}`)
-    .set("Cookie", `jwt=${token}`)
-    .send(req)
-    .expect(200);
-    expect(res.body[0].text).toBe(req.text);
-    expect(res.body[0].user._id).toBe(testUser1._id.toString());
+		const res = await request(app)
+			.post(`/api/posts/comment/${testPost2._id}`)
+			.set("Cookie", `jwt=${token}`)
+			.send(req)
+			.expect(200);
+		expect(res.body[0].text).toBe(req.text);
+		expect(res.body[0].user._id).toBe(testUser1._id.toString());
 	});
 
-  it("throws an error if no text is provided", async () => {
-    const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    const req = {
-      text: undefined,
-    };
-    const res = await request(app)
-     .post(`/api/posts/comment/${testPost2._id}`)
-     .set("Cookie", `jwt=${token}`)
-     .send(req)
-     .expect(400);
-    expect(res.body.error).toBe("Text field is required");
-  });
+	it("throws an error if no text is provided", async () => {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
+			expiresIn: "1d",
+		});
+		const req = {
+			text: undefined,
+		};
+		const res = await request(app)
+			.post(`/api/posts/comment/${testPost2._id}`)
+			.set("Cookie", `jwt=${token}`)
+			.send(req)
+			.expect(400);
+		expect(res.body.error).toBe("Text field is required");
+	});
 
-  it("throws an error if the post id is invalid", async () => {
-    const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    const req = {
-      text: "This is a test comment for test post 2",
-    };
-    const res = await request(app)
-     .post("/api/posts/comment/123456789012345678901234")
-     .set("Cookie", `jwt=${token}`)
-     .send(req)
-     .expect(404);
-    expect(res.body.error).toBe("Post not found");
-  });
+	it("throws an error if the post id is invalid", async () => {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
+			expiresIn: "1d",
+		});
+		const req = {
+			text: "This is a test comment for test post 2",
+		};
+		const res = await request(app)
+			.post("/api/posts/comment/123456789012345678901234")
+			.set("Cookie", `jwt=${token}`)
+			.send(req)
+			.expect(404);
+		expect(res.body.error).toBe("Post not found");
+	});
 });
 
 describe("likeUnlikePost", () => {
 	it("successfully likes a post", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const res = await request(app)
@@ -232,8 +235,8 @@ describe("likeUnlikePost", () => {
 		expect(res.body[0]).toBe(testUser1._id.toString());
 	});
 
-  it("successfully unlikes a post", async () => {
-		const token = jwt.sign({ userId: testUser1 }, process.env.JWT_SECRET, {
+	it("successfully unlikes a post", async () => {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const res = await request(app)
@@ -246,17 +249,78 @@ describe("likeUnlikePost", () => {
 
 describe("getLikedPosts", () => {
 	it("successfully gets all liked posts", async () => {
-		const token = jwt.sign({ userId: testUser2 }, process.env.JWT_SECRET, {
+		const token = jwt.sign({ userId: testUser2._id }, process.env.JWT_SECRET, {
 			expiresIn: "1d",
 		});
 		const res = await request(app)
-			.get(`/api/posts/likes/${testPost1._id}`)
+			.get(`/api/posts/likes/${testUser2._id}`)
 			.set("Cookie", `jwt=${token}`)
 			.expect(200);
-      console.log(res.body);
 		expect(res.body).toBeInstanceOf(Array);
 		expect(res.body.length).toBe(1);
 		expect(res.body[0].user._id).toBe(testUser1._id.toString());
 	});
 });
 
+describe("getUserPosts", () => {
+	it("successfully gets all posts by user", async () => {
+		const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
+			expiresIn: "1d",
+		});
+		const res = await request(app)
+			.get(`/api/posts/user/${testUser2.username}`)
+			.set("Cookie", `jwt=${token}`)
+			.expect(200);
+		expect(res.body).toBeInstanceOf(Array);
+		expect(res.body.length).toBe(1);
+		expect(res.body[0].text).toBe(testPost2.text);
+		expect(res.body[0].user._id).toBe(testUser2._id.toString());
+	});
+
+  it("throws an error if the username is invalid", async () => {
+    const token = jwt.sign({ userId: testUser1._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    const res = await request(app)
+     .get("/api/posts/user/notauser")
+     .set("Cookie", `jwt=${token}`)
+     .expect(404);
+    expect(res.body.error).toBe("User not found");
+  });
+});
+
+describe("deletePost", () => {
+	it("successfully deletes a post", async () => {
+		const token = jwt.sign({ userId: testUser2._id }, process.env.JWT_SECRET, {
+			expiresIn: "1d",
+		});
+		const res = await request(app)
+			.delete(`/api/posts/${testPost2._id}`)
+			.set("Cookie", `jwt=${token}`)
+			.expect(200);
+		expect(res.body).toEqual({ message: "Post deleted successfully" });
+		expect(res.status).toBe(200);
+	});
+
+  it("throws an error if the post id is invalid", async () => {
+    const token = jwt.sign({ userId: testUser2._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    const res = await request(app)
+     .delete("/api/posts/123456789012345678901234")
+     .set("Cookie", `jwt=${token}`)
+     .expect(404);
+    expect(res.body.error).toBe("Post not found");
+  });
+
+  it("throws an error if the user is not the owner of the post", async () => {
+    const token = jwt.sign({ userId: testUser2._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    const res = await request(app)
+     .delete(`/api/posts/${testPost1._id}`)
+     .set("Cookie", `jwt=${token}`)
+     .expect(401);
+    expect(res.body.error).toBe("Unauthorized");
+  });
+});
