@@ -164,7 +164,6 @@ export const updateUser = async (req, res) => {
 		}
 		if (currentPassword && newPassword) {
 			const isMatch = await bcrypt.compare(currentPassword, user.password);
-			console.log(isMatch);
 			if (!isMatch) {
 				return res.status(400).json({ error: "Incorrect current password" });
 			}
